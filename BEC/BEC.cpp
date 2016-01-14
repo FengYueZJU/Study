@@ -172,6 +172,7 @@ void BEC::stepForward()
     	    }
     	}
     }
+
     double err = 1.0;
     while (err > 1e-10)
     {
@@ -192,11 +193,9 @@ void BEC::stepForward()
 	    err += (_phi(i) - phi(i)) * (_phi(i) - phi(i));  
 	}
 	err = sqrt(err);
-  
-	std::cout << "err = " << err << std::endl;
-  
     }
-        
+    std::cout << "err = " << err << std::endl;
+
     FEMFunction<double, DIM> delta_phi(fem_space);
  
     double L2Phi = Functional::L2Norm(phi, 6);
@@ -206,13 +205,10 @@ void BEC::stepForward()
     for (int i = 0; i < n_dof_phi; ++i)
     {
     	phi(i) /= L2Phi;
-    	delta_phi(i) -= phi(i);
     }
-    double res_phi = Functional::L2Norm(delta_phi, 6);
 
     double e = energy(phi,6);
     std::cout << "Energy = " << e << std::endl;
-    std::cout << "Res = " << res_phi << std::endl;
     
     t += dt;
 };
