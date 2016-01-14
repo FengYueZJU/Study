@@ -1,23 +1,23 @@
 //
-// time: Thu Jan 14 14:35:17 2016
+// time: Wed Dec 23 16:15:04 2015
 //
 // version: 3.2.0 (format), 4.4.4 (DX)
 //
 //
 // MODULE main
-// workspace: width = 500, height = 523
+// workspace: width = 596, height = 566
 // layout: snap = 0, width = 50, height = 50, align = NN
 //
 macro main(
 ) -> (
 ) {
     // 
-    // node FileSelector[1]: x = 109, y = 80, inputs = 0, label = FileSelector
-    // output[1]: visible = 1, type = 32, value = NULL
-    // output[2]: visible = 1, type = 32, value = NULL
+    // node FileSelector[1]: x = 198, y = 141, inputs = 0, label = FileSelector
+    // output[1]: visible = 1, type = 32, value = "/home/hywang/Projects/fengy/RBEC/phi2.dx"
+    // output[2]: visible = 1, type = 32, value = "phi2.dx"
     //
     // 
-    // node Import[1]: x = 127, y = 189, inputs = 6, label = Import
+    // node Import[1]: x = 144, y = 260, inputs = 6, label = Import
     //
 main_Import_1_out_1 = 
     Import(
@@ -29,12 +29,29 @@ main_Import_1_out_1 =
     main_Import_1_in_6
     ) [instance: 1, cache: 1];
     // 
-    // node AutoColor[1]: x = 320, y = 135, inputs = 10, label = AutoColor
+    // node RubberSheet[1]: x = 324, y = 372, inputs = 4, label = RubberSheet
+    //
+main_RubberSheet_1_out_1 = 
+    RubberSheet(
+    main_Import_1_out_1,
+    main_RubberSheet_1_in_2,
+    main_RubberSheet_1_in_3,
+    main_RubberSheet_1_in_4
+    ) [instance: 1, cache: 1];
+    // 
+    // node ShowConnections[1]: x = 355, y = 507, inputs = 1, label = ShowConnections
+    //
+main_ShowConnections_1_out_1 = 
+    ShowConnections(
+    main_RubberSheet_1_out_1
+    ) [instance: 1, cache: 1];
+    // 
+    // node AutoColor[1]: x = 140, y = 429, inputs = 10, label = AutoColor
     //
 main_AutoColor_1_out_1,
 main_AutoColor_1_out_2 = 
     AutoColor(
-    main_Import_1_out_1,
+    main_ShowConnections_1_out_1,
     main_AutoColor_1_in_2,
     main_AutoColor_1_in_3,
     main_AutoColor_1_in_4,
@@ -46,32 +63,38 @@ main_AutoColor_1_out_2 =
     main_AutoColor_1_in_10
     ) [instance: 1, cache: 1];
     // 
-    // node RubberSheet[1]: x = 303, y = 284, inputs = 4, label = RubberSheet
-    //
-main_RubberSheet_1_out_1 = 
-    RubberSheet(
-    main_AutoColor_1_out_1,
-    main_RubberSheet_1_in_2,
-    main_RubberSheet_1_in_3,
-    main_RubberSheet_1_in_4
-    ) [instance: 1, cache: 1];
-    // 
-    // node Image[1]: x = 371, y = 444, inputs = 49, label = Image
+    // node Image[1]: x = 524, y = 375, inputs = 49, label = Image
     // input[1]: defaulting = 0, visible = 0, type = 67108863, value = "Image_1"
-    // input[4]: defaulting = 0, visible = 0, type = 1, value = 0
+    // input[4]: defaulting = 0, visible = 0, type = 1, value = 1
+    // input[5]: defaulting = 0, visible = 0, type = 8, value = [0 0 0.848528]
+    // input[6]: defaulting = 0, visible = 0, type = 8, value = [31.582 -22.142 21.8384]
+    // input[7]: defaulting = 0, visible = 0, type = 5, value = 23.5325
+    // input[8]: defaulting = 0, visible = 0, type = 1, value = 961
+    // input[9]: defaulting = 0, visible = 0, type = 5, value = 0.732
+    // input[10]: defaulting = 0, visible = 0, type = 8, value = [0.131034 0.774066 0.619396]
+    // input[11]: defaulting = 1, visible = 0, type = 5, value = 30.0001
+    // input[12]: defaulting = 0, visible = 0, type = 1, value = 0
     // input[14]: defaulting = 0, visible = 0, type = 1, value = 1
-    // input[19]: defaulting = 0, visible = 0, type = 3, value = 0
+    // input[15]: defaulting = 1, visible = 0, type = 32, value = "none"
+    // input[16]: defaulting = 1, visible = 0, type = 32, value = "none"
+    // input[17]: defaulting = 1, visible = 0, type = 1, value = 1
+    // input[18]: defaulting = 1, visible = 0, type = 1, value = 1
+    // input[19]: defaulting = 0, visible = 0, type = 1, value = 0
+    // input[25]: defaulting = 1, visible = 0, type = 32, value = "Example_4_3_b"
+    // input[29]: defaulting = 0, visible = 0, type = 3, value = 1
+    // input[33]: defaulting = 0, visible = 0, type = 3, value = 1
+    // input[36]: defaulting = 0, visible = 0, type = 3, value = 1
+    // input[41]: defaulting = 0, visible = 0, type = 32, value = "rotate"
     // depth: value = 24
-    // window: position = (0.0078,0.0000), size = 0.5109x0.6562
+    // window: position = (0.0479,0.0312), size = 0.9521x0.9688, screen = 1
     // internal caching: 1
-    // interaction mode = NONE
     //
 main_Image_1_out_1,
 main_Image_1_out_2,
 main_Image_1_out_3 = 
     Image(
     main_Image_1_in_1,
-    main_RubberSheet_1_out_1,
+    main_AutoColor_1_out_1,
     main_Image_1_in_3,
     main_Image_1_in_4,
     main_Image_1_in_5,
@@ -120,89 +143,21 @@ main_Image_1_out_3 =
     main_Image_1_in_48,
     main_Image_1_in_49
     ) [instance: 1, cache: 1];
-    // 
-    // node ShowConnections[1]: x = 104, y = 315, inputs = 1, label = ShowConnections
-    //
-main_ShowConnections_1_out_1 = 
-    ShowConnections(
-    main_AutoColor_1_out_1
-    ) [instance: 1, cache: 1];
-    // 
-    // node Image[2]: x = 98, y = 464, inputs = 49, label = Image
-    // input[1]: defaulting = 0, visible = 0, type = 67108863, value = "Image_2"
-    // input[4]: defaulting = 0, visible = 0, type = 1, value = 0
-    // input[14]: defaulting = 0, visible = 0, type = 1, value = 1
-    // input[19]: defaulting = 0, visible = 0, type = 3, value = 0
-    // depth: value = 24
-    // window: position = (0.0078,0.0000), size = 0.5109x0.6562
-    // internal caching: 1
-    // interaction mode = NONE
-    //
-main_Image_2_out_1,
-main_Image_2_out_2,
-main_Image_2_out_3 = 
-    Image(
-    main_Image_2_in_1,
-    main_ShowConnections_1_out_1,
-    main_Image_2_in_3,
-    main_Image_2_in_4,
-    main_Image_2_in_5,
-    main_Image_2_in_6,
-    main_Image_2_in_7,
-    main_Image_2_in_8,
-    main_Image_2_in_9,
-    main_Image_2_in_10,
-    main_Image_2_in_11,
-    main_Image_2_in_12,
-    main_Image_2_in_13,
-    main_Image_2_in_14,
-    main_Image_2_in_15,
-    main_Image_2_in_16,
-    main_Image_2_in_17,
-    main_Image_2_in_18,
-    main_Image_2_in_19,
-    main_Image_2_in_20,
-    main_Image_2_in_21,
-    main_Image_2_in_22,
-    main_Image_2_in_23,
-    main_Image_2_in_24,
-    main_Image_2_in_25,
-    main_Image_2_in_26,
-    main_Image_2_in_27,
-    main_Image_2_in_28,
-    main_Image_2_in_29,
-    main_Image_2_in_30,
-    main_Image_2_in_31,
-    main_Image_2_in_32,
-    main_Image_2_in_33,
-    main_Image_2_in_34,
-    main_Image_2_in_35,
-    main_Image_2_in_36,
-    main_Image_2_in_37,
-    main_Image_2_in_38,
-    main_Image_2_in_39,
-    main_Image_2_in_40,
-    main_Image_2_in_41,
-    main_Image_2_in_42,
-    main_Image_2_in_43,
-    main_Image_2_in_44,
-    main_Image_2_in_45,
-    main_Image_2_in_46,
-    main_Image_2_in_47,
-    main_Image_2_in_48,
-    main_Image_2_in_49
-    ) [instance: 2, cache: 1];
 // network: end of macro body
 CacheScene(main_Image_1_in_1, main_Image_1_out_1, main_Image_1_out_2);
-CacheScene(main_Image_2_in_1, main_Image_2_out_1, main_Image_2_out_2);
 }
-main_FileSelector_1_out_1 = NULL;
+main_FileSelector_1_out_1 = "/home/hywang/Projects/fengy/RBEC/phi2.dx";
 main_Import_1_in_2 = NULL;
 main_Import_1_in_3 = NULL;
 main_Import_1_in_4 = NULL;
 main_Import_1_in_5 = NULL;
 main_Import_1_in_6 = NULL;
 main_Import_1_out_1 = NULL;
+main_RubberSheet_1_in_2 = NULL;
+main_RubberSheet_1_in_3 = NULL;
+main_RubberSheet_1_in_4 = NULL;
+main_RubberSheet_1_out_1 = NULL;
+main_ShowConnections_1_out_1 = NULL;
 main_AutoColor_1_in_2 = NULL;
 main_AutoColor_1_in_3 = NULL;
 main_AutoColor_1_in_4 = NULL;
@@ -213,10 +168,6 @@ main_AutoColor_1_in_8 = NULL;
 main_AutoColor_1_in_9 = NULL;
 main_AutoColor_1_in_10 = NULL;
 main_AutoColor_1_out_1 = NULL;
-main_RubberSheet_1_in_2 = NULL;
-main_RubberSheet_1_in_3 = NULL;
-main_RubberSheet_1_in_4 = NULL;
-main_RubberSheet_1_out_1 = NULL;
 macro Image(
         id,
         object,
@@ -531,15 +482,15 @@ macro Image(
 }
 main_Image_1_in_1 = "Image_1";
 main_Image_1_in_3 = "X24,,";
-main_Image_1_in_4 = 0;
-main_Image_1_in_5 = NULL;
-main_Image_1_in_6 = NULL;
-main_Image_1_in_7 = NULL;
-main_Image_1_in_8 = NULL;
-main_Image_1_in_9 = NULL;
-main_Image_1_in_10 = NULL;
+main_Image_1_in_4 = 1;
+main_Image_1_in_5 = [0 0 0.848528];
+main_Image_1_in_6 = [31.582 -22.142 21.8384];
+main_Image_1_in_7 = 23.5325;
+main_Image_1_in_8 = 961;
+main_Image_1_in_9 = 0.732;
+main_Image_1_in_10 = [0.131034 0.774066 0.619396];
 main_Image_1_in_11 = NULL;
-main_Image_1_in_12 = NULL;
+main_Image_1_in_12 = 0;
 main_Image_1_in_13 = NULL;
 main_Image_1_in_14 = 1;
 main_Image_1_in_15 = NULL;
@@ -555,19 +506,19 @@ main_Image_1_in_25 = NULL;
 main_Image_1_in_26 = NULL;
 main_Image_1_in_27 = NULL;
 main_Image_1_in_28 = NULL;
-main_Image_1_in_29 = NULL;
+main_Image_1_in_29 = 1;
 main_Image_1_in_30 = NULL;
 main_Image_1_in_31 = NULL;
 main_Image_1_in_32 = NULL;
-main_Image_1_in_33 = NULL;
+main_Image_1_in_33 = 1;
 main_Image_1_in_34 = NULL;
 main_Image_1_in_35 = NULL;
-main_Image_1_in_36 = NULL;
+main_Image_1_in_36 = 1;
 main_Image_1_in_37 = NULL;
 main_Image_1_in_38 = NULL;
 main_Image_1_in_39 = NULL;
 main_Image_1_in_40 = NULL;
-main_Image_1_in_41 = NULL;
+main_Image_1_in_41 = "rotate";
 main_Image_1_in_42 = NULL;
 main_Image_1_in_43 = NULL;
 main_Image_1_in_44 = NULL;
@@ -576,54 +527,6 @@ main_Image_1_in_46 = NULL;
 main_Image_1_in_47 = NULL;
 main_Image_1_in_48 = NULL;
 main_Image_1_in_49 = NULL;
-main_ShowConnections_1_out_1 = NULL;
-main_Image_2_in_1 = "Image_2";
-main_Image_2_in_3 = "X24,,";
-main_Image_2_in_4 = 0;
-main_Image_2_in_5 = NULL;
-main_Image_2_in_6 = NULL;
-main_Image_2_in_7 = NULL;
-main_Image_2_in_8 = NULL;
-main_Image_2_in_9 = NULL;
-main_Image_2_in_10 = NULL;
-main_Image_2_in_11 = NULL;
-main_Image_2_in_12 = NULL;
-main_Image_2_in_13 = NULL;
-main_Image_2_in_14 = 1;
-main_Image_2_in_15 = NULL;
-main_Image_2_in_16 = NULL;
-main_Image_2_in_17 = NULL;
-main_Image_2_in_18 = NULL;
-main_Image_2_in_19 = 0;
-main_Image_2_in_20 = NULL;
-main_Image_2_in_21 = NULL;
-main_Image_2_in_22 = NULL;
-main_Image_2_in_23 = NULL;
-main_Image_2_in_25 = NULL;
-main_Image_2_in_26 = NULL;
-main_Image_2_in_27 = NULL;
-main_Image_2_in_28 = NULL;
-main_Image_2_in_29 = NULL;
-main_Image_2_in_30 = NULL;
-main_Image_2_in_31 = NULL;
-main_Image_2_in_32 = NULL;
-main_Image_2_in_33 = NULL;
-main_Image_2_in_34 = NULL;
-main_Image_2_in_35 = NULL;
-main_Image_2_in_36 = NULL;
-main_Image_2_in_37 = NULL;
-main_Image_2_in_38 = NULL;
-main_Image_2_in_39 = NULL;
-main_Image_2_in_40 = NULL;
-main_Image_2_in_41 = NULL;
-main_Image_2_in_42 = NULL;
-main_Image_2_in_43 = NULL;
-main_Image_2_in_44 = NULL;
-main_Image_2_in_45 = NULL;
-main_Image_2_in_46 = NULL;
-main_Image_2_in_47 = NULL;
-main_Image_2_in_48 = NULL;
-main_Image_2_in_49 = NULL;
 Executive("product version 4 4 4");
 $sync
 main();

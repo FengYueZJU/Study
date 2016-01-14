@@ -1,0 +1,122 @@
+\hypertarget{classRBEC}{\section{\-R\-B\-E\-C \-Class \-Reference}
+\label{classRBEC}\index{\-R\-B\-E\-C@{\-R\-B\-E\-C}}
+}
+
+
+{\ttfamily \#include $<$\-R\-B\-E\-C.\-h$>$}
+
+\subsection*{\-Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{classRBEC_1_1Matrix__A}{\-Matrix\-\_\-\-A}
+\item 
+class \hyperlink{classRBEC_1_1Matrix__B}{\-Matrix\-\_\-\-B}
+\end{DoxyCompactItemize}
+\subsection*{\-Public \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classRBEC_a723be498ca090edc6e274a7bd1f67e3a}{\-R\-B\-E\-C} (const std\-::string \&file)
+\item 
+virtual \hyperlink{classRBEC_aad73215677771c5db888aeba1e4ea9b6}{$\sim$\-R\-B\-E\-C} ()
+\item 
+void \hyperlink{classRBEC_aea72cfa81063a39d0e0893b47746d9ec}{run} ()
+\item 
+void \hyperlink{classRBEC_a4e86bc643b4e635c6ac2a8e5c33194a7}{step\-Forward} ()
+\item 
+void \hyperlink{classRBEC_a6b49753b683daeb077c8e6ad7869334c}{initialize} ()
+\item 
+void \hyperlink{classRBEC_af0c239804c4823203b24caa207fe57c9}{initial\-Value} ()
+\item 
+double \hyperlink{classRBEC_a045feaa0f3e1a7bee513e999dfad18df}{energy} (\-F\-E\-M\-Function$<$ double, \-D\-I\-M $>$ \&phi\-\_\-re, \-F\-E\-M\-Function$<$ double, \-D\-I\-M $>$ \&phi\-\_\-im, int algebric\-\_\-accuracy)
+\end{DoxyCompactItemize}
+
+
+\subsection{\-Detailed \-Description}
+带旋转的\-B\-E\-C方程类. 
+
+\subsection{\-Constructor \& \-Destructor \-Documentation}
+\hypertarget{classRBEC_a723be498ca090edc6e274a7bd1f67e3a}{\index{\-R\-B\-E\-C@{\-R\-B\-E\-C}!\-R\-B\-E\-C@{\-R\-B\-E\-C}}
+\index{\-R\-B\-E\-C@{\-R\-B\-E\-C}!RBEC@{\-R\-B\-E\-C}}
+\subsubsection[{\-R\-B\-E\-C}]{\setlength{\rightskip}{0pt plus 5cm}{\bf \-R\-B\-E\-C\-::\-R\-B\-E\-C} (
+\begin{DoxyParamCaption}
+\item[{const std\-::string \&}]{file}
+\end{DoxyParamCaption}
+)}}\label{classRBEC_a723be498ca090edc6e274a7bd1f67e3a}
+构造函数.
+
+
+\begin{DoxyParams}{\-Parameters}
+{\em file} & 网格文件. \\
+\hline
+\end{DoxyParams}
+\hypertarget{classRBEC_aad73215677771c5db888aeba1e4ea9b6}{\index{\-R\-B\-E\-C@{\-R\-B\-E\-C}!$\sim$\-R\-B\-E\-C@{$\sim$\-R\-B\-E\-C}}
+\index{$\sim$\-R\-B\-E\-C@{$\sim$\-R\-B\-E\-C}!RBEC@{\-R\-B\-E\-C}}
+\subsubsection[{$\sim$\-R\-B\-E\-C}]{\setlength{\rightskip}{0pt plus 5cm}virtual {\bf \-R\-B\-E\-C\-::$\sim$\-R\-B\-E\-C} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}\label{classRBEC_aad73215677771c5db888aeba1e4ea9b6}
+析构函数.
+
+\begin{DoxyReturn}{\-Returns}
+标准返回. 
+\end{DoxyReturn}
+
+
+\subsection{\-Member \-Function \-Documentation}
+\hypertarget{classRBEC_a045feaa0f3e1a7bee513e999dfad18df}{\index{\-R\-B\-E\-C@{\-R\-B\-E\-C}!energy@{energy}}
+\index{energy@{energy}!RBEC@{\-R\-B\-E\-C}}
+\subsubsection[{energy}]{\setlength{\rightskip}{0pt plus 5cm}double {\bf \-R\-B\-E\-C\-::energy} (
+\begin{DoxyParamCaption}
+\item[{\-F\-E\-M\-Function$<$ double, \-D\-I\-M $>$ \&}]{phi\-\_\-re, }
+\item[{\-F\-E\-M\-Function$<$ double, \-D\-I\-M $>$ \&}]{phi\-\_\-im, }
+\item[{int}]{algebric\-\_\-accuracy}
+\end{DoxyParamCaption}
+)}}\label{classRBEC_a045feaa0f3e1a7bee513e999dfad18df}
+计算能量.
+
+
+\begin{DoxyParams}{\-Parameters}
+{\em phi\-\_\-re} & 数值解实部. \\
+\hline
+{\em phi\-\_\-im} & 数值解虚部. \\
+\hline
+{\em algebric\-\_\-accuracy} & 积分精度.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{\-Returns}
+全局能量. 
+\end{DoxyReturn}
+\hypertarget{classRBEC_a6b49753b683daeb077c8e6ad7869334c}{\index{\-R\-B\-E\-C@{\-R\-B\-E\-C}!initialize@{initialize}}
+\index{initialize@{initialize}!RBEC@{\-R\-B\-E\-C}}
+\subsubsection[{initialize}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-R\-B\-E\-C\-::initialize} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classRBEC_a6b49753b683daeb077c8e6ad7869334c}
+初始化. \hypertarget{classRBEC_af0c239804c4823203b24caa207fe57c9}{\index{\-R\-B\-E\-C@{\-R\-B\-E\-C}!initial\-Value@{initial\-Value}}
+\index{initial\-Value@{initial\-Value}!RBEC@{\-R\-B\-E\-C}}
+\subsubsection[{initial\-Value}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-R\-B\-E\-C\-::initial\-Value} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classRBEC_af0c239804c4823203b24caa207fe57c9}
+准备初值. \hypertarget{classRBEC_aea72cfa81063a39d0e0893b47746d9ec}{\index{\-R\-B\-E\-C@{\-R\-B\-E\-C}!run@{run}}
+\index{run@{run}!RBEC@{\-R\-B\-E\-C}}
+\subsubsection[{run}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-R\-B\-E\-C\-::run} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classRBEC_aea72cfa81063a39d0e0893b47746d9ec}
+主流程. \hypertarget{classRBEC_a4e86bc643b4e635c6ac2a8e5c33194a7}{\index{\-R\-B\-E\-C@{\-R\-B\-E\-C}!step\-Forward@{step\-Forward}}
+\index{step\-Forward@{step\-Forward}!RBEC@{\-R\-B\-E\-C}}
+\subsubsection[{step\-Forward}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-R\-B\-E\-C\-::step\-Forward} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classRBEC_a4e86bc643b4e635c6ac2a8e5c33194a7}
+时间步长发展. 
+
+\-The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+\hyperlink{RBEC_8h}{\-R\-B\-E\-C.\-h}\end{DoxyCompactItemize}

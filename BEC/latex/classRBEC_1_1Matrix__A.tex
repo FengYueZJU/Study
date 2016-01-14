@@ -1,0 +1,100 @@
+\hypertarget{classRBEC_1_1Matrix__A}{\section{\-R\-B\-E\-C\-:\-:\-Matrix\-\_\-\-A \-Class \-Reference}
+\label{classRBEC_1_1Matrix__A}\index{\-R\-B\-E\-C\-::\-Matrix\-\_\-\-A@{\-R\-B\-E\-C\-::\-Matrix\-\_\-\-A}}
+}
+
+
+{\ttfamily \#include $<$\-R\-B\-E\-C.\-h$>$}
+
+\subsection*{\-Public \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classRBEC_1_1Matrix__A_ad2af8f38793cd61aa4123aa44e8549ca}{\-Matrix\-\_\-\-A} (\-F\-E\-M\-Space$<$ double, \-D\-I\-M $>$ \&sp, const double \&\-\_\-dt, const double \&\-\_\-beta, const double \&\-\_\-omega, const double \&\-\_\-gamma\-\_\-x, const double \&\-\_\-gamma\-\_\-y, \-F\-E\-M\-Function$<$ double, \-D\-I\-M $>$ \&\-\_\-phi\-\_\-re, \-F\-E\-M\-Function$<$ double, \-D\-I\-M $>$ \&\-\_\-phi\-\_\-im)
+\item 
+virtual \hyperlink{classRBEC_1_1Matrix__A_a144736582d8cf84718e18a28d044c94b}{$\sim$\-Matrix\-\_\-\-A} ()
+\item 
+virtual void \hyperlink{classRBEC_1_1Matrix__A_ac2a9785b7efee67b345e09c36732e1d5}{get\-Element\-Matrix} (const \-Element$<$ double, \-D\-I\-M $>$ \&e0, const \-Element$<$ double, \-D\-I\-M $>$ \&e1, const \-Active\-Element\-Pair\-Iterator$<$ \-D\-I\-M $>$\-::\-State state)
+\end{DoxyCompactItemize}
+
+
+\subsection{\-Detailed \-Description}
+系数矩阵类. 解空间实部, 测试空间实部. 
+
+\subsection{\-Constructor \& \-Destructor \-Documentation}
+\hypertarget{classRBEC_1_1Matrix__A_ad2af8f38793cd61aa4123aa44e8549ca}{\index{\-R\-B\-E\-C\-::\-Matrix\-\_\-\-A@{\-R\-B\-E\-C\-::\-Matrix\-\_\-\-A}!\-Matrix\-\_\-\-A@{\-Matrix\-\_\-\-A}}
+\index{\-Matrix\-\_\-\-A@{\-Matrix\-\_\-\-A}!RBEC::Matrix_A@{\-R\-B\-E\-C\-::\-Matrix\-\_\-\-A}}
+\subsubsection[{\-Matrix\-\_\-\-A}]{\setlength{\rightskip}{0pt plus 5cm}{\bf \-R\-B\-E\-C\-::\-Matrix\-\_\-\-A\-::\-Matrix\-\_\-\-A} (
+\begin{DoxyParamCaption}
+\item[{\-F\-E\-M\-Space$<$ double, \-D\-I\-M $>$ \&}]{sp, }
+\item[{const double \&}]{\-\_\-dt, }
+\item[{const double \&}]{\-\_\-beta, }
+\item[{const double \&}]{\-\_\-omega, }
+\item[{const double \&}]{\-\_\-gamma\-\_\-x, }
+\item[{const double \&}]{\-\_\-gamma\-\_\-y, }
+\item[{\-F\-E\-M\-Function$<$ double, \-D\-I\-M $>$ \&}]{\-\_\-phi\-\_\-re, }
+\item[{\-F\-E\-M\-Function$<$ double, \-D\-I\-M $>$ \&}]{\-\_\-phi\-\_\-im}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}\label{classRBEC_1_1Matrix__A_ad2af8f38793cd61aa4123aa44e8549ca}
+构造函数.
+
+
+\begin{DoxyParams}{\-Parameters}
+{\em sp} & 有限元空间. \\
+\hline
+{\em \-\_\-dt} & 时间步长. \\
+\hline
+{\em \-\_\-beta} & 参数. \\
+\hline
+{\em \-\_\-omega} & 角速度. \\
+\hline
+{\em \-\_\-gamma\-\_\-x} & 参数. \\
+\hline
+{\em \-\_\-gamma\-\_\-y} & 参数. \\
+\hline
+{\em \-\_\-phi\-\_\-re} & 数值解, 实部. \\
+\hline
+{\em \-\_\-phi\-\_\-im} & 数值解, 虚部.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{\-Returns}
+标准返回. 
+\end{DoxyReturn}
+\hypertarget{classRBEC_1_1Matrix__A_a144736582d8cf84718e18a28d044c94b}{\index{\-R\-B\-E\-C\-::\-Matrix\-\_\-\-A@{\-R\-B\-E\-C\-::\-Matrix\-\_\-\-A}!$\sim$\-Matrix\-\_\-\-A@{$\sim$\-Matrix\-\_\-\-A}}
+\index{$\sim$\-Matrix\-\_\-\-A@{$\sim$\-Matrix\-\_\-\-A}!RBEC::Matrix_A@{\-R\-B\-E\-C\-::\-Matrix\-\_\-\-A}}
+\subsubsection[{$\sim$\-Matrix\-\_\-\-A}]{\setlength{\rightskip}{0pt plus 5cm}virtual {\bf \-R\-B\-E\-C\-::\-Matrix\-\_\-\-A\-::$\sim$\-Matrix\-\_\-\-A} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline, virtual\mbox{]}}}}\label{classRBEC_1_1Matrix__A_a144736582d8cf84718e18a28d044c94b}
+析构函数.
+
+\begin{DoxyReturn}{\-Returns}
+标准返回. 
+\end{DoxyReturn}
+
+
+\subsection{\-Member \-Function \-Documentation}
+\hypertarget{classRBEC_1_1Matrix__A_ac2a9785b7efee67b345e09c36732e1d5}{\index{\-R\-B\-E\-C\-::\-Matrix\-\_\-\-A@{\-R\-B\-E\-C\-::\-Matrix\-\_\-\-A}!get\-Element\-Matrix@{get\-Element\-Matrix}}
+\index{get\-Element\-Matrix@{get\-Element\-Matrix}!RBEC::Matrix_A@{\-R\-B\-E\-C\-::\-Matrix\-\_\-\-A}}
+\subsubsection[{get\-Element\-Matrix}]{\setlength{\rightskip}{0pt plus 5cm}virtual void {\bf \-R\-B\-E\-C\-::\-Matrix\-\_\-\-A\-::get\-Element\-Matrix} (
+\begin{DoxyParamCaption}
+\item[{const \-Element$<$ double, \-D\-I\-M $>$ \&}]{e0, }
+\item[{const \-Element$<$ double, \-D\-I\-M $>$ \&}]{e1, }
+\item[{const \-Active\-Element\-Pair\-Iterator$<$ \-D\-I\-M $>$\-::\-State}]{state}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}\label{classRBEC_1_1Matrix__A_ac2a9785b7efee67b345e09c36732e1d5}
+拼装矩阵元素.
+
+
+\begin{DoxyParams}{\-Parameters}
+{\em e0} & 测试空间单元. \\
+\hline
+{\em e1} & 解空间单元. \\
+\hline
+{\em state} & 拼装状态. \\
+\hline
+\end{DoxyParams}
+
+
+\-The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+\hyperlink{RBEC_8h}{\-R\-B\-E\-C.\-h}\end{DoxyCompactItemize}

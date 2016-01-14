@@ -3,7 +3,7 @@
  * @author Feng Yue <fengyue@zju.edu.cn>
  * @date   Wed Dec 23 09:58:53 2015
  * 
- * @brief  带旋转的BEC方程的类型声明.
+ * @brief  BEC方程的类型声明.
  * 
  * 
  */
@@ -69,7 +69,7 @@ public:
  *  初值函数类型, 实部.
  * 
  */
-class Initial_Re : public Function<double>
+class Initial : public Function<double>
 {
 private:
     double omega;		/**< 角速度. */
@@ -81,7 +81,7 @@ public:
      * 
      * @return 标准返回.
      */
-    Initial_Re(double _omega) :
+    Initial(double _omega) :
 	omega(_omega)
 	{};
     /** 
@@ -90,7 +90,7 @@ public:
      * 
      * @return 标准返回. 
      */
-    ~Initial_Re() {};
+    ~Initial() {};
 public:
     /** 
      * 求函数值.
@@ -108,56 +108,74 @@ public:
     virtual std::vector<double> gradient(const double *) const;
 };
 
-/**
- * 初值函数类型, 虚部.
- * 
- */
-class Initial_Im : public Function<double>
-{
-private:
-    double omega;		/**< 角速度. */
-public:
-
-    /** 
-     * 初始构造函数.
-     * 
-     * @param _omega 角速度. 
-     * 
-     * @return 标准返回.
-     */
-    Initial_Im(double _omega) :
-	omega(_omega)
-	{};
-    /** 
-     * 析构函数.
-     * 
-     * 
-     * @return 标准返回.
-     */
-    ~Initial_Im() {};
-public:
-    /** 
-     * 求函数值.
-     * 
-     * 
-     * @return 函数值. 
-     */
-    virtual double value(const double *) const;
-    /** 
-     * 求梯度值.
-     * 
-     * 
-     * @return 梯度值.
-     */
-    virtual std::vector<double> gradient(const double *) const;
-};
 
 /**
- * 带旋转的BEC方程类.
+ * BEC方程类.
  * 
  */
 class RBEC
 {
+public:
+    /**
+     * 系数矩阵类. 解空间实部, 测试空间实部.
+     * 
+     */
+    class Matrix : public StiffMatrix<DIM, double>
+    {
+    private:
+	double dt;		/**< 时间步长. */
+	double beta;		/**< 参数. */
+	double gamma_x;		/**< 参数. */
+	double gamma_y;		/**< 参数. */
+	FEMFunction<double, DIM> *phi; /**< 数值解. */
+    public:
+	/** 
+	 * 构造函数.
+	 * 
+	 * @param sp 有限元空间.
+	 * @param _dt 时间步长.
+	 * @param _beta 参数.
+	 * @param _gamma_x 参数.
+	 * @param _gamma_y 参数.
+	 * @param _phi 数值解, 实部.
+	 * 
+	 * @return 标准返回.
+	 */
+	Matrix(FEMSpace<double, DIM>& sp, 
+		 const double& _dt, 
+		 const double& _beta,
+		 const double& _gamma_x,
+		 const double& _gamma_y,
+		 FEMFunction<double, DIM>& _phi) :
+	    dt(_dt), 
+	    beta(_beta),	
+	    gamma_x(_gamma_x),
+	    gamma_y(_gamma_y),
+	    StiffMatrix<DIM, double>(sp) 
+	    {
+		phi = &_phi;
+	    };
+	/** 
+	 * 析构函数.
+	 * 
+	 * 
+	 * @return 标准返回. 
+	 */
+	virtual ~Matrix() {};
+    public:
+	/** 
+	 * 拼装矩阵元素.
+	 * 
+	 * @param e0 解空间单元.
+	 * @param e1 测试空间单元.
+	 * @param state 拼装状态.
+	 */
+	virtual void getElementMatrix(const Element<double, DIM>& e0,
+				      const Element<double, DIM>& e1,
+				      const ActiveElementPairIterator<DIM>::State state);
+    };
+
+
 private:
     TemplateGeometry<DIM> template_geometry; /**< 参考几何体. */
     CoordTransform<DIM, DIM> coord_transform; /**< 座标变换. */
@@ -173,28 +191,7 @@ private:
     double gamma_x;		/**< 参数. */
     double gamma_y;		/**< 参数. */
     double beta;		/**< 参数. */
-    double omega;		/**< 角速度. */
-    FEMFunction<double, DIM> phi_re; /**< 数值解实部. */
-    FEMFunction<double, DIM> phi_im; /**< 数值解虚部. */
-
-    SparsityPattern sp_RBEC;
-    /// 应用各块带宽.
-    SparsityPattern sp_rere;
-    SparsityPattern sp_reim;
-    SparsityPattern sp_imre;
-    SparsityPattern sp_imim;
-
-    SparseMatrix<double> mat_RBEC;
-    SparseMatrix<double> mat_rere;
-    SparseMatrix<double> mat_reim;
-    SparseMatrix<double> mat_imre;
-    SparseMatrix<double> mat_imim;
-
-
-    std::vector<int> index_rere;
-    std::vector<int> index_imre;
-    std::vector<int> index_reim;
-    std::vector<int> index_imim;
+    FEMFunction<double, DIM> phi; /**< 数值解实部. */
     
 public:
     /** 
@@ -202,14 +199,14 @@ public:
      * 
      * @param file 网格文件. 
      */
-    RBEC(const std::string& file);
+    BEC(const std::string& file);
     /** 
      * 析构函数.
      * 
      * 
      * @return 标准返回.
      */
-    virtual ~RBEC();
+    virtual ~BEC();
 public:
     /** 
      * 主流程.
@@ -232,23 +229,14 @@ public:
      */
     void initialValue();
     /** 
-     * 边界条件处理.
-     * 
-     * @param x 线性方程组未知量.
-     */
-    void boundaryValue(Vector<double> &x, Vector<double> &rhs, SparseMatrix<double> &matrix); 
-    /** 
      * 计算能量.
      * 
-     * @param phi_re 数值解实部.
-     * @param phi_im 数值解虚部.
+     * @param phi 数值解实部.
      * @param algebric_accuracy 积分精度.
      * 
      * @return 全局能量.
      */
-    double energy(FEMFunction<double, DIM>& phi_re, FEMFunction<double, DIM>& phi_im,  int algebric_accuracy);    
-    void buildMatrixStruct();
-
+    double energy(FEMFunction<double, DIM>& phi,  int algebric_accuracy);    
 };
 
 //

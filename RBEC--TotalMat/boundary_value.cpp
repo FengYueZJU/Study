@@ -1,7 +1,7 @@
 #include "RBEC.h"
 #define DIM 2
 
-void RBEC::boundaryValue(Vector<double> &x)
+void RBEC::boundaryValue(Vector<double> &x, Vector<double> &rhs, SparseMatrix<double> &matrix)
 {
 	/// 空间自由度.
 	unsigned int n_dof = fem_space.n_dof();
@@ -29,8 +29,7 @@ void RBEC::boundaryValue(Vector<double> &x)
 		if (bm == 1)
 			x(i) = 0.0;
 
-		/// 右端项这样改, 如果该行和列其余元素均为零, 则在迭代中确
-		/// 保该数值解和边界一致.
+		/// 右端项这样改, 如果该行和列其余元素均为零, 则在迭代中确保该数值解和边界一致.
 
 		if (bm == 1)
 		{
@@ -49,7 +48,7 @@ void RBEC::boundaryValue(Vector<double> &x)
 				{
 					/// 计算 k 行 i 列的存储位置.
 					unsigned int l = p - &colnum[rowstart[0]];
-					/// 移动到右端项. 等价于 r(k) = r(k) - x(i) * A(k, i).
+					/// 移到右端项. 等价于 r(k) = r(k) - x(i) * A(k, i).
 					rhs(k) -= matrix.global_entry(l)* x(i);
 					/// 移完此项自然是零.
 					matrix.global_entry(l) -= matrix.global_entry(l);
@@ -57,7 +56,7 @@ void RBEC::boundaryValue(Vector<double> &x)
 			}
 		}
 	}
-	std::cout << "boundary values for RBEC OK!" << std::endl;
+	std::cout << "Boundary values for RBEC OK!" << std::endl;
 };
 
 #undef DIM
