@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 // main.cpp :
 //
-#include "RBEC.h"
+#include "BEC.h"
 
 int main(int argc, char * argv[])
 {
@@ -11,7 +11,7 @@ int main(int argc, char * argv[])
 				<< " meshfile" << std::endl;
 			return 1;
 		}
-		RBEC the_app(argv[1]);
+		BEC the_app(argv[1]);
 		the_app.run();
 	}
 	catch(std::exception& e) {

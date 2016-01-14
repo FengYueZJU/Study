@@ -2,7 +2,7 @@
 
 double Potential::value(const double * p) const
 {
-    double result =  0.5 * (gamma_x * gamma_x * p[0] * p[0] + gamma_y * gamma_y * p[1] * p[1]) + 4.0 * exp(-((p[0] - 1.0) * (p[0] - 1.0) + p[1] * p[1]));
+    double result =  0.5 * (gamma_x * gamma_x * p[0] * p[0] + gamma_y * gamma_y * p[1] * p[1]) + omega0 * exp(-delta *((p[0] - r0) * (p[0] - r0) + p[1] * p[1]));
     return result;
 }
 
@@ -17,23 +17,20 @@ double u(const double * p)
     return 0;
 };
 
-
-/// without normalization.
-
 double Initial::value(const double * p) const
 {
-    double result = sqrt(sqrt((gamma_x * gamma_y))) / sqrt(PI) * exp(- (p[0] * p[0] + p[1] * p[1])/2);
+    double result = pow((gamma_x * gamma_y),0.25) / sqrt(PI) * exp(- (gamma_x * p[0] * p[0] + gamma_y *  p[1] * p[1])/2);
     return result;
 }
 
-std::vector<double> Initial_Re::gradient(const double * p) const
+std::vector<double> Initial::gradient(const double * p) const
 {
     std::vector<double> v(DIM);
     return v;
 };
 
 
-void RBEC::Matrix_A::getElementMatrix(
+void BEC::Matrix::getElementMatrix(
     const Element<double, DIM>& element0,
     const Element<double, DIM>& element1,
     const ActiveElementPairIterator<DIM>::State state)
@@ -47,9 +44,8 @@ void RBEC::Matrix_A::getElementMatrix(
     std::vector<Point<DIM> > q_point = element0.local_to_global(quad_info.quadraturePoint());
     std::vector<std::vector<double> > basis_value = element0.basis_function_value(q_point);
     std::vector<std::vector<std::vector<double> > > basis_gradient = element0.basis_function_gradient(q_point);
-    std::vector<double>  phi_re_value = phi_re->value(q_point, element0);   
-    std::vector<double>  phi_im_value = phi_im->value(q_point, element0); 
-    Potential V(gamma_x, gamma_y);
+    std::vector<double>  phi_value = phi->value(q_point, element0);   
+    Potential V(gamma_x, gamma_y,omega0,delta,r0);
     for (int l = 0;l < n_quadrature_point;l ++) {
 	double Jxw = quad_info.weight(l)*jacobian[l]*volume;
 	for (int j = 0;j < n_element_dof0;j ++) {
@@ -57,7 +53,7 @@ void RBEC::Matrix_A::getElementMatrix(
 		elementMatrix(j, k) += Jxw * ((1 / dt) * basis_value[j][l] * basis_value[k][l]
 					      + 0.5 * innerProduct(basis_gradient[j][l], basis_gradient[k][l])
 					      + V.value(q_point[l]) * basis_value[j][l] * basis_value[k][l]
-					      + beta * (phi_re_value[l] * phi_re_value[l]  + phi_im_value[l] * phi_im_value[l]) * basis_value[j][l] * basis_value[k][l]);
+					      + beta * (phi_value[l] * phi_value[l]) * basis_value[j][l] * basis_value[k][l]);
 	    }
 	}
     }
@@ -65,7 +61,7 @@ void RBEC::Matrix_A::getElementMatrix(
 
 
 BEC::BEC(const std::string& file) :
-    mesh_file(file), beta(200.0), t(0.0), dt(1.0e-3), gamma_x(1.0), gamma_y(1.0)
+    mesh_file(file), beta(200.0), t(0.0), dt(1.0e-3), gamma_x(1.0), gamma_y(1.0), omega0(4.0), delta(1.0), r0(1.0)
 {};
 
 BEC::~BEC()
@@ -120,54 +116,40 @@ void BEC::run()
     } while (t < 3);
 };
 
-void RBEC::initialValue()
+void BEC::initialValue()
 {
     Initial  phi_0(gamma_x,gamma_y);
-
-//    FEMFunction <double, DIM> phi_star_0(fem_space);
 
     Operator::L2Project(phi_0, phi, Operator::LOCAL_LEAST_SQUARE, 3);
 
     int n_dof = fem_space.n_dof();
-    ///// the same as .* in matlab
-    for (int i = 0; i < n_dof; ++i)
-	phi_star_0(i) = sqrt(phi_re(i) * phi_re(i) + phi_im(i) * phi_im(i));
     
-    double L2Phi_0 = Functional::L2Norm(phi_star_0, 6);
+    double L2Phi_0 = Functional::L2Norm(phi, 6);
     std::cout << "L2Norm = " << L2Phi_0 << std::endl;
 
     for (int i = 0; i < n_dof; ++i)
     {
-	phi_re(i) /= L2Phi_0;
-	phi_im(i) /= L2Phi_0; 
+	phi(i) /= L2Phi_0; 
     }
 
     FEMFunction<double, DIM> vh(fem_space);
-    Potential V(gamma_x, gamma_y);
+    Potential V(gamma_x, gamma_y,omega0,delta,r0);
     Operator::L2Project(V, vh, Operator::LOCAL_LEAST_SQUARE, 3);
     vh.writeOpenDXData("V.dx");
 };
 
 
-void RBEC::stepForward()
+void BEC::stepForward()
 {
     int i, j, k, l;
     int n_dof_phi = fem_space.n_dof();
 
-    Matrix_A matA(fem_space, dt, beta, gamma_x, gamma_y, omega, phi_re , phi_im);
-    Matrix_B matB(fem_space, dt, beta, gamma_x, gamma_y, omega, phi_re , phi_im);
-    // Matrix_C matC(fem_space, dt, beta, gamma_x, gamma_y, omega, phi_re , phi_im);
-    Matrix_D matD(fem_space, dt, beta, gamma_x, gamma_y, omega, phi_re , phi_im);
+    Matrix mat(fem_space, dt, beta, gamma_x, gamma_y, omega0, delta, r0, phi);
 
-    matA.algebricAccuracy() = 6;
-    matA.build();
-    matB.algebricAccuracy() = 6;
-    matB.build();
-    matD.algebricAccuracy() = 6;
-    matD.build();
+    mat.algebricAccuracy() = 6;
+    mat.build();
 
-    Vector<double> rhs_re(n_dof_phi);
-    Vector<double> rhs_im(n_dof_phi);
+    Vector<double> rhs(n_dof_phi);
 
     FEMSpace<double, DIM>::ElementIterator the_element = fem_space.beginElement();
     FEMSpace<double, DIM>::ElementIterator end_element = fem_space.endElement();
@@ -178,8 +160,7 @@ void RBEC::stepForward()
     	int n_quadrature_point = quad_info.n_quadraturePoint();
     	std::vector<Point<DIM> > q_point = the_element->local_to_global(quad_info.quadraturePoint());
     	std::vector<std::vector<double> > basis_value = the_element->basis_function_value(q_point);
-    	std::vector<double> phi_re_value = phi_re.value(q_point, *the_element);
-    	std::vector<double> phi_im_value = phi_im.value(q_point, *the_element);
+    	std::vector<double> phi_value = phi.value(q_point, *the_element);
     	int n_element_dof = the_element->n_dof();
     	const std::vector<int>& element_dof = the_element->dof();
     	for (l = 0;l < n_quadrature_point;l ++) 
@@ -187,91 +168,61 @@ void RBEC::stepForward()
     	    double Jxw = quad_info.weight(l)*jacobian[l]*volume;
     	    for (j = 0;j < n_element_dof;j ++) 
     	    {
-    		rhs_re(element_dof[j]) += Jxw * phi_re_value[l] * basis_value[j][l] / dt;
-    		rhs_im(element_dof[j]) += Jxw * phi_im_value[l] * basis_value[j][l] / dt;
+    		rhs(element_dof[j]) += Jxw * phi_value[l] * basis_value[j][l] / dt;
     	    }
     	}
     }
     double err = 1.0;
     while (err > 1e-10)
     {
-	FEMFunction<double, DIM> _phi_re(phi_re);
-	FEMFunction<double, DIM> _phi_im(phi_im);
-	Vector<double> tmp1(phi_im);
-	matB.vmult(tmp1, tmp1);
-    
-	for (int i = 0; i < n_dof_phi; ++i)
-	    rhs_re(i) -= tmp1(i);
+	FEMFunction<double, DIM> _phi(phi);
 
-	BoundaryFunction<double, DIM> boundary_A(BoundaryConditionInfo::DIRICHLET, 1, &u_re);
-	BoundaryConditionAdmin<double, DIM> boundary_admin_A(fem_space);
-	boundary_admin_A.add(boundary_A);
-	boundary_admin_A.apply(matA, phi_re, rhs_re);
+	BoundaryFunction<double, DIM> boundary(BoundaryConditionInfo::DIRICHLET, 1, &u);
+	BoundaryConditionAdmin<double, DIM> boundary_admin(fem_space);
+	boundary_admin.add(boundary);
+	boundary_admin.apply(mat, phi, rhs);
 
-	AMGSolver solverA(matA);
-	solverA.solve(phi_re, rhs_re);
+	AMGSolver solver(mat);
+	solver.solve(phi, rhs);
 
-	Vector<double> tmp2(phi_re);
-	matB.vmult(tmp2, tmp2);
-    
-	for (int i = 0; i < n_dof_phi; ++i)
-	    rhs_im(i) += tmp2(i);
-    
-	BoundaryFunction<double, DIM> boundary_B(BoundaryConditionInfo::DIRICHLET, 1, &u_im);
-	BoundaryConditionAdmin<double, DIM> boundary_admin_B(fem_space);
-	boundary_admin_B.add(boundary_B);
-	boundary_admin_B.apply(matD, phi_im, rhs_im);
-
-//   AMGSolver solverA(matB);
-	solverA.solve(phi_im, rhs_im);
-
-//    FEMFunction<double, DIM> delta_phi_re(fem_space);
-//    FEMFunction<double, DIM> delta_phi_im(fem_space);
-//	FEMFunction<double, DIM> phi_star(fem_space);
 	err = 0;
 
 	for (int i = 0; i < n_dof_phi; ++i)
 	{
-	    err += (_phi_re(i) - phi_re(i)) * (_phi_re(i) - phi_re(i));  
-	    err += (_phi_im(i) - phi_im(i)) * (_phi_im(i) - phi_im(i));
+	    err += (_phi(i) - phi(i)) * (_phi(i) - phi(i));  
 	}
 	err = sqrt(err);
   
 	std::cout << "err = " << err << std::endl;
-    // for (int i = 0; i < n_dof_phi; ++i)
-    // 	phi_star(i) = sqrt(phi_re(i) * phi_re(i) + phi_im(i) * phi_im(i));
-
+  
     }
-    // for (int i = 0; i < n_dof_phi; ++i)
-    // 	phi_star(i) = sqrt(phi_re(i) * phi_re(i) + phi_im(i) * phi_im(i));
-
-    double L2Phi = Functional::L2Norm(phi_re, 6);
+        
+    FEMFunction<double, DIM> delta_phi(fem_space);
+ 
+    double L2Phi = Functional::L2Norm(phi, 6);
 
     std::cout << "L2 norm = " << L2Phi << std::endl;
+
     for (int i = 0; i < n_dof_phi; ++i)
     {
-    	phi_re(i) /= L2Phi;
-    	phi_im(i) /= L2Phi;
-//    	delta_phi_re(i) -= phi_re(i);
-//    	delta_phi_im(i) -= phi_im(i);
-//    	delta_ phi_star(i) = sqrt(delta_phi_re(i) * delta_phi_re(i) + delta_phi_im(i) * delta_phi_im(i)); 
+    	phi(i) /= L2Phi;
+    	delta_phi(i) -= phi(i);
     }
+    double res_phi = Functional::L2Norm(delta_phi, 6);
 
-//    double res_phi = Functional::L2Norm(delta_phi_star, 6);
-
-//    double e = energy(phi_re,phi_im, 6);
-//    std::cout << "Energy = " << e << std::endl;
-//    std::cout << "Res = " << res_phi << std::endl;
+    double e = energy(phi,6);
+    std::cout << "Energy = " << e << std::endl;
+    std::cout << "Res = " << res_phi << std::endl;
     
     t += dt;
 };
 
-double RBEC::energy(FEMFunction<double, DIM>& phi_re, FEMFunction<double, DIM>& phi_im, int algebric_accuracy)
+double BEC::energy(FEMFunction<double, DIM>& phi, int algebric_accuracy)
 {
     double e = 0;
-    Potential V(gamma_x, gamma_y);
-//////
-    FEMSpace<double, DIM>& fem_space = phi_re.femSpace();
+    Potential V(gamma_x, gamma_y, omega0, delta, r0);
+
+    FEMSpace<double, DIM>& fem_space = phi.femSpace();
     FEMSpace<double, DIM>::ElementIterator the_element = fem_space.beginElement();
     FEMSpace<double, DIM>::ElementIterator end_element = fem_space.endElement();
     for (;the_element != end_element;the_element ++) 
@@ -281,21 +232,17 @@ double RBEC::energy(FEMFunction<double, DIM>& phi_re, FEMFunction<double, DIM>& 
 	std::vector<double> jacobian = the_element->local_to_global_jacobian(quad_info.quadraturePoint());
 	int n_quadrature_point = quad_info.n_quadraturePoint();
 	std::vector<Point<DIM> > q_point = the_element->local_to_global(quad_info.quadraturePoint());
-	std::vector<double> phi_re_value = phi_re.value(q_point, *the_element);
-	std::vector<double> phi_im_value = phi_im.value(q_point, *the_element);
-	std::vector<std::vector<double> > phi_re_gradient = phi_re.gradient(q_point, *the_element);
-	std::vector<std::vector<double> > phi_im_gradient = phi_im.gradient(q_point, *the_element); 
+	std::vector<double> phi_value = phi.value(q_point, *the_element);
+	std::vector<std::vector<double> > phi_gradient = phi.gradient(q_point, *the_element);
+
 	for (int l = 0; l < n_quadrature_point; l++) 
 	{
 	    double Jxw = quad_info.weight(l) * jacobian[l] * volume;
-	    double phi2 = phi_re_value[l] * phi_re_value[l] + phi_im_value[l] * phi_im_value[l];
-//////////Energy of Lz
-	    e += Jxw * (0.5 * (phi_re_gradient[l][0] * phi_re_gradient[l][0] +phi_re_gradient[l][1] * phi_re_gradient[l][1] + phi_im_gradient[l][0] * phi_im_gradient[l][0] +  phi_im_gradient[l][1] * phi_im_gradient[l][1]) 
+	    double phi2 = phi_value[l] * phi_value[l];
+
+	    e += Jxw * (0.5 * (phi_gradient[l][0] * phi_gradient[l][0] +phi_gradient[l][1] * phi_gradient[l][1]) 
 			+ V.value(q_point[l]) * phi2
-			+ 0.5 * beta * phi2 * phi2 - omega * (q_point[l][0] * phi_re_value[l] * phi_im_gradient[l][1]                
-                                                              - q_point[l][1] * phi_re_value[l] * phi_im_gradient[l][0] 
-                                                              - q_point[l][0] * phi_im_value[l] * phi_re_gradient[l][1] 
-                                                              + q_point[l][1] * phi_im_value[l] * phi_im_gradient[l][0]));
+			+ 0.5 * beta * phi2 * phi2);
 
 	}
     }

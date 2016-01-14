@@ -1,5 +1,5 @@
 /**
- * @file   RBEC.h
+ * @file   BEC.h
  * @author Feng Yue <fengyue@zju.edu.cn>
  * @date   Wed Dec 23 09:58:53 2015
  * 
@@ -26,19 +26,31 @@ class Potential : public Function<double>
 private:
     double gamma_x;		/**< 参数. */
     double gamma_y;		/**< 参数. */
+    double omega0;		/**< 参数. */
+    double delta;		/**< 参数. */
+    double r0;		        /**< 参数. */
 public:
     /** 
      * 初始构造函数, 传递参数.
      * 
      * @param _gamma_x 参数. 
      * @param _gamma_y 参数.
+     * @param _omega0  参数.
+     * @param _delta   参数.
+     * @param _r0      参数.
      * 
      * @return 标准返回.
      */
     Potential(double _gamma_x, 
-	      double _gamma_y) :
+	      double _gamma_y,
+	      double _omega0,
+	      double _delta,
+              double _r0) :
 	gamma_x(_gamma_x), 
-	gamma_y(_gamma_y)
+	gamma_y(_gamma_y),
+	omega0(_omega0),
+        delta(_delta),
+        r0(_r0)
 	{};
     /** 
      * 析构函数.
@@ -66,23 +78,27 @@ public:
 };
 
 /**
- *  初值函数类型, 实部.
+ *  初值函数类型.
  * 
  */
 class Initial : public Function<double>
 {
 private:
-    double omega;		/**< 角速度. */
+    double gamma_x;		/**< 参数. */
+    double gamma_y;		/**< 参数. */
 public:
     /** 
      * 初始构造函数.
      * 
-     * @param _omega 角速度.
+     * @param _gamma_x 参数.
+     * @param _gamma_y 参数.
      * 
      * @return 标准返回.
      */
-    Initial(double _omega) :
-	omega(_omega)
+    Initial(double _gamma_x, 
+	    double _gamma_y) :
+	gamma_x(_gamma_x), 
+	gamma_y(_gamma_y)
 	{};
     /** 
      * 析构函数.
@@ -113,11 +129,11 @@ public:
  * BEC方程类.
  * 
  */
-class RBEC
+class BEC
 {
 public:
     /**
-     * 系数矩阵类. 解空间实部, 测试空间实部.
+     * 系数矩阵类.
      * 
      */
     class Matrix : public StiffMatrix<DIM, double>
@@ -127,6 +143,9 @@ public:
 	double beta;		/**< 参数. */
 	double gamma_x;		/**< 参数. */
 	double gamma_y;		/**< 参数. */
+	double omega0;		/**< 参数. */
+	double delta;		/**< 参数. */
+	double r0;		/**< 参数. */
 	FEMFunction<double, DIM> *phi; /**< 数值解. */
     public:
 	/** 
@@ -137,6 +156,9 @@ public:
 	 * @param _beta 参数.
 	 * @param _gamma_x 参数.
 	 * @param _gamma_y 参数.
+	 * @param _omega0  参数.
+	 * @param _delta   参数.
+	 * @param _r0      参数.
 	 * @param _phi 数值解, 实部.
 	 * 
 	 * @return 标准返回.
@@ -146,11 +168,17 @@ public:
 		 const double& _beta,
 		 const double& _gamma_x,
 		 const double& _gamma_y,
+                 const double& _omega0,
+                 const double& _delta,
+                 const double& _r0,
 		 FEMFunction<double, DIM>& _phi) :
 	    dt(_dt), 
 	    beta(_beta),	
 	    gamma_x(_gamma_x),
 	    gamma_y(_gamma_y),
+            omega0(_omega0),
+            delta(_delta),
+            r0(_r0),
 	    StiffMatrix<DIM, double>(sp) 
 	    {
 		phi = &_phi;
@@ -190,6 +218,9 @@ private:
     double dt;			/**< 时间步长. */
     double gamma_x;		/**< 参数. */
     double gamma_y;		/**< 参数. */
+    double omega0;		/**< 参数. */
+    double delta; 		/**< 参数. */
+    double r0;  		/**< 参数. */
     double beta;		/**< 参数. */
     FEMFunction<double, DIM> phi; /**< 数值解实部. */
     
