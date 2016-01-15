@@ -3,7 +3,7 @@
 double Potential::value(const double * p) const
 {
 //    double result =  0.5 * (gamma_x * gamma_x * p[0] * p[0] + gamma_y * gamma_y * p[1] * p[1]);
-    double result =  0.5 * ( p[0] * p[0] + 16 * p[1] * p[1]);
+    double result =  0.5 * ( p[0] * p[0] +  p[1] * p[1]) + 4 * exp(-((p[0]-1) * (p[0]-1) + p[1] * p[1]));
 
     return result;
 }
@@ -21,7 +21,7 @@ double Initial_Re::value(const double * p) const
 
 {
     //  double result = ((1 - omega) + omega *  p[0]) / sqrt(PI) * exp(- (p[0] * p[0] + p[1] * p[1])/2);
-    double result = sqrt(2) / sqrt(PI) * exp(- (p[0] * p[0] +4 * p[1] * p[1])/2);
+    double result = 1 / sqrt(PI) * exp(- (p[0] * p[0] + p[1] * p[1])/2);
     return result;
 }
 
@@ -34,7 +34,7 @@ std::vector<double> Initial_Re::gradient(const double * p) const
 double Initial_Im::value(const double * p) const
 {
 //    double result = omega * p[1] / sqrt(PI) * exp(-(p[0] * p[0] + p[1] * p[1])/2);
-    double result = sqrt(2) / sqrt(PI) * exp(- (p[0] * p[0] +4 * p[1] * p[1])/2);  
+    double result = 1 / sqrt(PI) * exp(- (p[0] * p[0] + p[1] * p[1])/2);  
     return result;
 }
 
@@ -47,7 +47,7 @@ std::vector<double> Initial_Im::gradient(const double * p) const
 
 
 RBEC::RBEC(const std::string& file) :
-    mesh_file(file), beta(200.0), t(0.0), dt(1.0e-3), gamma_x(1.0), gamma_y(4.0), omega(0.5)
+    mesh_file(file), beta(200.0), t(0.0), dt(1.0e-3), gamma_x(1.0), gamma_y(1.0), omega(0.5)
 {};
 
 RBEC::~RBEC()
@@ -115,11 +115,13 @@ void RBEC::initialValue()
     Operator::L2Project(phi_im_0, phi_im, Operator::LOCAL_LEAST_SQUARE, 3);
 
     int n_dof = fem_space.n_dof();
+
     ///// the same as .* in matlab
     for (int i = 0; i < n_dof; ++i)
 	phi_star_0(i) = phi_re(i) * phi_re(i) + phi_im(i) * phi_im(i);
     
-    double L2Phi_0 = Functional::L2Norm(phi_star_0, 6);
+//    double L2Phi_0 = Functional::L2Norm(phi_star_0, 6);
+    double L2Phi_0 = Functional::L2Norm(phi_re, 6);
     std::cout << "L2Norm = " << L2Phi_0 << std::endl;
 
     for (int i = 0; i < n_dof; ++i)
@@ -190,28 +192,20 @@ void RBEC::stepForward()
 		    mat_RBEC.add(element_dof[j], element_dof[k], cont);
 		    mat_RBEC.add(element_dof[j] + n_dof, element_dof[k] + n_dof, cont);
 
+
 //		    cont = Jxw * (-omega * (q_point[l][0] * basis_gradient[j][l][1] 
 //					    - q_point[l][1] * basis_gradient[j][l][0]) * basis_value[k][l]);
 //		    mat_RBEC.add(element_dof[j], element_dof[k] + n_dof, cont);
 //		    mat_RBEC.add(element_dof[j] + n_dof, element_dof[k], -cont);
+                    mat_RBEC.add(element_dof[j], element_dof[k] + n_dof, 0);
+		    mat_RBEC.add(element_dof[j] + n_dof, element_dof[k], 0);
 		}
     		rhs(element_dof[j]) += Jxw * phi_re_value[l] * basis_value[j][l] / dt;
     		rhs(element_dof[j] + n_dof) += Jxw * phi_im_value[l] * basis_value[j][l] / dt;
 	    }
 	}
     }
- // std::cout << "haha "  << std::endl;
- //    std::ofstream output("test.m"); 
 
- //    output << "A = [" << std::endl;
- //    for (i = 0; i < n_dof * 2; ++i)
- //    {
- // 	for (j = 0; j < n_dof * 2; ++j)
- // 	    output << mat_RBEC.el(i, j) << "\t";
- // 	output << std::endl;
- //    }
- //    output << "];" << std::endl;
- //    output.close();
  // std::cout << "haha "  << std::endl;
 
         for (int i = 0; i < n_dof; ++i)
@@ -220,12 +214,26 @@ void RBEC::stepForward()
              phi(n_dof + i) = phi_im(i);
         }
 
-	rhs.reinit(n_total_dof);
+        double err = 1.0;
+        while (err > 1e-10)
+        {
+             FEMFunction<double, DIM> _phi_re(phi_re);
+             FEMFunction<double, DIM> _phi_im(phi_im);
 
+	     boundaryValue(phi, rhs, mat_RBEC);
+	     AMGSolver solver(mat_RBEC);
+	     solver.solve(phi, rhs);
+        	
+             err = 0;
+  
+             for (int i = 0; i < n_dof; ++i)
+	     {
+	         err += (_phi_re(i) - phi_re(i)) * (_phi_re(i) - phi_re(i)) + (_phi_im(i) - phi_im(i)) * (_phi_im(i) - phi_im(i));  
+	     }
+	     err = sqrt(err);
+          } 
+    std::cout << "err = " << err << std::endl;
 
-	boundaryValue(phi, rhs, mat_RBEC);
-	AMGSolver solver(mat_RBEC);
-	solver.solve(phi, rhs);
    
         for (int i = 0; i < n_dof; ++i)
         {
