@@ -1,4 +1,5 @@
 #include "RBEC.h"
+#include "math.h"
 
 double Potential::value(const double * p) const
 {
@@ -42,7 +43,7 @@ std::vector<double> Initial_Im::gradient(const double * p) const
 
 
 RBEC::RBEC(const std::string& file) :
-    mesh_file(file), beta(100.0), t(0.0), dt(1.0e-3), gamma_x(1.0), gamma_y(1.0), omega(0.0)
+    mesh_file(file), beta(100.0), t(0.0), dt(1.0e-3), gamma_x(1.0), gamma_y(1.0), omega(0.75)
 {};
 
 RBEC::~RBEC()
@@ -87,6 +88,8 @@ void RBEC::run()
 
     FEMFunction <double, DIM> phi2(fem_space);
 
+    mu = 0;
+
     do {
        
     	stepForward();
@@ -96,7 +99,7 @@ void RBEC::run()
     	phi2.writeOpenDXData("phi2.dx");
 
     	std::cout << "t  = " << t << std::endl;
-    } while (t < 30);
+    } while (t < 3);
 };
 
 void RBEC::initialValue()
@@ -106,7 +109,6 @@ void RBEC::initialValue()
     Initial_Im  phi_im_0(omega);
 
     FEMFunction <double, DIM> phi_star_0(fem_space);
-    FEMFunction <double, DIM> phi0(fem_space);
 
     Operator::L2Project(phi_re_0, phi_re, Operator::LOCAL_LEAST_SQUARE, 5);
     Operator::L2Project(phi_im_0, phi_im, Operator::LOCAL_LEAST_SQUARE, 5);
@@ -114,10 +116,7 @@ void RBEC::initialValue()
     int n_dof = fem_space.n_dof();
 
     for (int i = 0; i < n_dof; ++i)
-    {
-	phi0(i) = phi_re(i) * phi_re(i) + phi_im(i) * phi_im(i);
-        phi_star_0(i) = sqrt(phi0(i));
-    }
+	phi_star_0(i) = sqrt(phi_re(i) * phi_re(i) + phi_im(i) * phi_im(i));
     
     double L2Phi_0 = Functional::L2Norm(phi_star_0, 10);
 
@@ -129,11 +128,18 @@ void RBEC::initialValue()
 	phi_im(i) /= L2Phi_0; 
     }
 
+    for (int i = 0; i < n_dof; ++i)
+	phi_star_0(i) = sqrt(phi_re(i) * phi_re(i) + phi_im(i) * phi_im(i));
+    
+    L2Phi_0 = Functional::L2Norm(phi_star_0, 10);
+
+    std::cout << "L2Norm = " << L2Phi_0 << std::endl;
+
     FEMFunction<double, DIM> vh(fem_space);
     Potential V(gamma_x, gamma_y);
     Operator::L2Project(V, vh, Operator::LOCAL_LEAST_SQUARE, 5);
     vh.writeOpenDXData("V.dx");
-    phi0.writeOpenDXData("phi0.dx");
+    phi_star_0.writeOpenDXData("phi0.dx");
 };
 
 
@@ -142,6 +148,8 @@ void RBEC::stepForward()
     int i, j, k, l;
     int n_dof = fem_space.n_dof();
     int n_total_dof = 2 * n_dof;
+
+    std::cout << "mu_old = " << mu << std::endl;
 
     mat_RBEC.reinit(sp_RBEC);
     mat_rere.reinit(sp_rere);
@@ -186,7 +194,7 @@ void RBEC::stepForward()
 		    double cont = Jxw * ((1 / dt) * basis_value[j][l] * basis_value[k][l]
 					 + 0.5 * innerProduct(basis_gradient[j][l], basis_gradient[k][l])
 					 + V.value(q_point[l]) * basis_value[j][l] * basis_value[k][l]
-					 + beta * (phi_re_value[l] * phi_re_value[l]  + phi_im_value[l] * phi_im_value[l]) * basis_value[j][l] * basis_value[k][l]);
+					 + beta * (phi_re_value[l] * phi_re_value[l]  + phi_im_value[l] * phi_im_value[l]) * basis_value[j][l] * basis_value[k][l] - mu * basis_value[j][l] * basis_value[k][l]);
 
 		    mat_RBEC.add(element_dof[j], element_dof[k], cont);
 		    mat_RBEC.add(element_dof[j] + n_dof, element_dof[k] + n_dof, cont);
@@ -203,22 +211,18 @@ void RBEC::stepForward()
 	    }
 	}
     }
+
     
+     FEMFunction<double, DIM> _phi_re(phi_re);
+     FEMFunction<double, DIM> _phi_im(phi_im);
 
      boundaryValue(phi, rhs, mat_RBEC);
 
-     PreconditionSSOR<> preconditioner;
-     preconditioner.initialize(mat_RBEC, 1.2);
-
-//     SparseILU<double> preconditioner;
-//     SparseILU<> ilu;
-//     ilu.initialize(mat_RBEC);
 
      dealii::SolverControl solver_control(4000, 1e-15);
      SolverGMRES<Vector<double> >::AdditionalData para(500, false, true);
      SolverGMRES<Vector<double> > gmres(solver_control, para);
-     gmres.solve(mat_RBEC, phi, rhs, preconditioner);
-//     gmres.solve(mat_RBEC, phi, rhs, PreconditionIdentity());
+     gmres.solve(mat_RBEC, phi, rhs, PreconditionIdentity());
         
      for (int i = 0; i < n_dof; ++i)
      {
@@ -226,21 +230,20 @@ void RBEC::stepForward()
         phi_im(i) = phi(n_dof + i);
       }
    	
+
      for (int i = 0; i < n_dof; ++i)
 	 phi_star(i) = sqrt(phi_re(i) * phi_re(i) + phi_im(i) * phi_im(i));
 
      double L2Phi = Functional::L2Norm(phi_star, 10);
 
      std::cout << "L2 norm = " << L2Phi << std::endl;
-       
-     for (int i = 0; i < n_dof; ++i)
-     {
-    	phi_re(i) /= L2Phi;
-	phi_im(i) /= L2Phi;
-     }
 
+     mu = -1/dt * log(L2Phi);
+     std::cout << "mu_new = " << mu << std::endl;
+    
      double e = energy(phi_re, phi_im, 10);
      std::cout << "Energy = " << e << std::endl;
+
 
      t += dt;
 };
@@ -249,7 +252,7 @@ double RBEC::energy(FEMFunction<double, DIM>& phi_re, FEMFunction<double, DIM>& 
 {
     double e = 0;
     Potential V(gamma_x, gamma_y);
-//////
+
     FEMSpace<double, DIM>& fem_space = phi_re.femSpace();
     FEMSpace<double, DIM>::ElementIterator the_element = fem_space.beginElement();
     FEMSpace<double, DIM>::ElementIterator end_element = fem_space.endElement();
@@ -275,7 +278,6 @@ double RBEC::energy(FEMFunction<double, DIM>& phi_re, FEMFunction<double, DIM>& 
 							      - q_point[l][1] * phi_re_value[l] * phi_im_gradient[l][0] 
 							      - q_point[l][0] * phi_im_value[l] * phi_re_gradient[l][1] 
 							      + q_point[l][1] * phi_im_value[l] * phi_im_gradient[l][0]));
-
 	}
     }
     return e;

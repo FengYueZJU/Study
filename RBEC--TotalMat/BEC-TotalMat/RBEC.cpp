@@ -114,6 +114,9 @@ void RBEC::initialValue()
 
     int n_dof = fem_space.n_dof();
 
+    for (int i = 0; i < n_dof;++i)
+	phi_star_0(i) = phi_re(i);
+
     double L2Phi_0 = Functional::L2Norm(phi_re, 6);
     std::cout << "L2Norm = " << L2Phi_0 << std::endl;
 
@@ -191,38 +194,27 @@ void RBEC::stepForward()
 	}
     }
 
+    FEMFunction<double, DIM> _phi_re(phi_re);
+    FEMFunction<double, DIM> _phi_im(phi_im);
 
-     double err = 1.0;
-     while (err > 1e-10)
-     {
+    boundaryValue(phi, rhs, mat_RBEC);
 
-        FEMFunction<double, DIM> _phi_re(phi_re);
-        FEMFunction<double, DIM> _phi_im(phi_im);
+//    AMGSolver solver(mat_RBEC);
+//    solver.solve(phi, rhs);
 
-        boundaryValue(phi, rhs, mat_RBEC);
+    dealii::SolverControl solver_control(4000, 1e-15);
+    SolverGMRES<Vector<double> >::AdditionalData para(500, false, true);
+    SolverGMRES<Vector<double> > gmres(solver_control, para);
+    gmres.solve(mat_RBEC, phi, rhs, PreconditionIdentity());
 
-        AMGSolver solver(mat_RBEC);
-        solver.solve(phi, rhs);
-    
-
-        for (int i = 0; i < n_dof; ++i)
-        {
-	   phi_re(i) = phi(i);
-           phi_im(i) = phi(n_dof + i);
-        }
-        	
-        err = 0;
-  
-        for (int i = 0; i < n_dof; ++i)
-        {
-	   err += (_phi_re(i) - phi_re(i)) * (_phi_re(i) - phi_re(i));  
-         }
-        err = sqrt(err);         
-     } 
-     std::cout << "err = " << err << std::endl;    
+    for (int i = 0; i < n_dof; ++i)
+    {
+         phi_re(i) = phi(i);
+         phi_im(i) = phi(n_dof + i);
+    }
 	
-     for (int i = 0; i < n_dof; ++i)
-	phi_star(i) = sqrt(phi_re(i) * phi_re(i) + phi_im(i) * phi_im(i));
+    for (int i = 0; i < n_dof; ++i)
+        phi_star(i) = sqrt(phi_re(i) * phi_re(i) + phi_im(i) * phi_im(i));
 
     double L2Phi = Functional::L2Norm(phi_re, 6);
 
