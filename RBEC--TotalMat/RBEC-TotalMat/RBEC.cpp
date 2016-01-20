@@ -42,7 +42,7 @@ std::vector<double> Initial_Im::gradient(const double * p) const
 
 
 RBEC::RBEC(const std::string& file) :
-    mesh_file(file), beta(100.0), t(0.0), dt(1.0e-3), gamma_x(1.0), gamma_y(1.0), omega(0.0)
+    mesh_file(file), beta(100.0), t(0.0), dt(1.0e-3), gamma_x(1.0), gamma_y(1.0), omega(0.5)
 {};
 
 RBEC::~RBEC()
@@ -114,10 +114,8 @@ void RBEC::initialValue()
     int n_dof = fem_space.n_dof();
 
     for (int i = 0; i < n_dof; ++i)
-    {
-	phi0(i) = phi_re(i) * phi_re(i) + phi_im(i) * phi_im(i);
-        phi_star_0(i) = sqrt(phi0(i));
-    }
+        phi_star_0(i) = sqrt(phi_re(i) * phi_re(i) + phi_im(i) * phi_im(i));
+  
     
     double L2Phi_0 = Functional::L2Norm(phi_star_0, 10);
 
@@ -128,6 +126,10 @@ void RBEC::initialValue()
 	phi_re(i) /= L2Phi_0;
 	phi_im(i) /= L2Phi_0; 
     }
+
+    for (int i = 0; i < n_dof; ++i)
+        phi0(i) = phi_re(i) * phi_re(i) + phi_im(i) * phi_im(i);
+  
 
     FEMFunction<double, DIM> vh(fem_space);
     Potential V(gamma_x, gamma_y);
@@ -214,9 +216,10 @@ void RBEC::stepForward()
 //     SparseILU<> ilu;
 //     ilu.initialize(mat_RBEC);
 
-     dealii::SolverControl solver_control(4000, 1e-15);
-     SolverGMRES<Vector<double> >::AdditionalData para(500, false, true);
-     SolverGMRES<Vector<double> > gmres(solver_control, para);
+     dealii::SolverControl solver_control(200000, 1e-15);
+//     SolverGMRES<Vector<double> >::AdditionalData para(500, false, true);
+//     SolverGMRES<Vector<double> > gmres(solver_control, para);
+     SolverGMRES<Vector<double> > gmres(solver_control);
      gmres.solve(mat_RBEC, phi, rhs, preconditioner);
 //     gmres.solve(mat_RBEC, phi, rhs, PreconditionIdentity());
         
