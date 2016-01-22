@@ -17,7 +17,8 @@ std::vector<double> Potential::gradient(const double * p) const
 
 double Initial_Re::value(const double * p) const
 {
-    double result = ((1 - omega) + omega *  p[0]) / sqrt(PI) * exp(- (p[0] * p[0] + p[1] * p[1])/2);
+    double result = ((1.0 - omega) + omega *  p[0]) / sqrt(PI) * exp(- (p[0] * p[0] + p[1] * p[1])/2.0);
+//    double result = 1.0 / sqrt(PI) *  exp(- (p[0] * p[0] + p[1] * p[1])/2.0); 
     return result;
 }
 
@@ -29,7 +30,8 @@ std::vector<double> Initial_Re::gradient(const double * p) const
 
 double Initial_Im::value(const double * p) const
 {
-    double result = omega * p[1] / sqrt(PI) * exp(-(p[0] * p[0] + p[1] * p[1])/2);
+    double result = omega * p[1] / sqrt(PI) * exp(-(p[0] * p[0] + p[1] * p[1])/2.0);
+//    double result = 0;  
     return result;
 }
 
@@ -200,17 +202,49 @@ void RBEC::stepForward()
 		    mat_RBEC.add(element_dof[j], element_dof[k] + n_dof, cont);
 		    mat_RBEC.add(element_dof[j] + n_dof, element_dof[k], -cont);
 		}
-		rhs(element_dof[j]) += Jxw * phi_re_value[l] * basis_value[j][l] / dt;
+          	rhs(element_dof[j]) += Jxw * phi_re_value[l] * basis_value[j][l] / dt;
 		rhs(element_dof[j] + n_dof) += Jxw * phi_im_value[l] * basis_value[j][l] / dt;
+	       
 	    }
 	}
     }
-    
 
-     boundaryValue(phi, rhs, mat_RBEC);
+    boundaryValue(phi, rhs, mat_RBEC);
 
-     PreconditionSSOR<> preconditioner;
-     preconditioner.initialize(mat_RBEC, 1.2);
+
+    const std::size_t * rowstart = sp_RBEC.get_rowstart_indices();
+    const unsigned int * colnum = sp_RBEC.get_column_numbers();
+
+    std::ofstream output("Matrix.m");
+    output.setf(std::ios::fixed);
+    output.precision(20);
+    output << "A =[" << std::endl;
+	for (int i = 0; i < n_total_dof; ++i)
+	{
+		for (int j = 0; j < n_total_dof; ++j)
+			output << mat_RBEC.el(i,j) << "\t";
+		output << std::endl;
+	}
+	output << "];" << std::endl;
+	output.close();
+	std::cout << "RBEC matrix outputed!" << std::endl;
+
+    std::ofstream output_rhs("rhs.m");
+    output_rhs.setf(std::ios::fixed);
+    output_rhs.precision(20);
+    output_rhs << "rhs =[" << std::endl;
+	for (int i = 0; i < n_total_dof; ++i)
+	{
+	    output_rhs << phi(i) << std::endl;
+	}
+	output_rhs << "];" << std::endl;
+	output_rhs.close();
+	std::cout << "RBEC rhs outputed!" << std::endl;
+	getchar();
+ 
+
+//     PreconditionSSOR<> preconditioner;
+//     preconditioner.initialize(mat_RBEC, 1.2);
 
 //     SparseILU<double> preconditioner;
 //     SparseILU<> ilu;
@@ -220,9 +254,13 @@ void RBEC::stepForward()
 //     SolverGMRES<Vector<double> >::AdditionalData para(500, false, true);
 //     SolverGMRES<Vector<double> > gmres(solver_control, para);
      SolverGMRES<Vector<double> > gmres(solver_control);
-     gmres.solve(mat_RBEC, phi, rhs, preconditioner);
-//     gmres.solve(mat_RBEC, phi, rhs, PreconditionIdentity());
-        
+//     gmres.solve(mat_RBEC, phi, rhs, preconditioner);
+     gmres.solve(mat_RBEC, phi, rhs, PreconditionIdentity());
+  
+//     SparseDirectUMFPACK A_direct;
+//     A_direct.initialize(mat_RBEC);
+//     A_direct.vmult(phi, rhs);
+      
      for (int i = 0; i < n_dof; ++i)
      {
         phi_re(i) = phi(i);
@@ -246,6 +284,7 @@ void RBEC::stepForward()
      std::cout << "Energy = " << e << std::endl;
 
      t += dt;
+     getchar();
 };
 
 double RBEC::energy(FEMFunction<double, DIM>& phi_re, FEMFunction<double, DIM>& phi_im, int algebric_accuracy)
