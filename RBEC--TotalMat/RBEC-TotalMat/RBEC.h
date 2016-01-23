@@ -24,6 +24,7 @@
 #include <lac/sparse_ilu.h>
 #include <lac/sparse_mic.h>
 #include <lac/solver_qmrs.h>
+#include <lac/sparse_direct.h>
 
 #define DIM 2
 #define PI (4.0 * atan(1.0))
@@ -176,8 +177,8 @@ private:
     BasisFunctionAdmin<double, DIM, DIM> basis_function; /**< 基函数 */
     std::vector<TemplateElement<double, DIM, DIM> > template_element; /**< 参考单元. */
     FEMSpace<double, DIM> fem_space; /**< 有限元空间. */
-    EasyMesh mesh;		/**< 网格. */
-
+//    EasyMesh mesh;		/**< 网格. */
+    Mesh<DIM> mesh;
     std::string mesh_file;	/**< 网格文件名. */
     double t;			/**< 物理时间. */
     double dt;			/**< 时间步长. */
