@@ -325,7 +325,7 @@ double RBEC::energy(FEMFunction<double, DIM>& phi_re, FEMFunction<double, DIM>& 
 			+ 0.5 * beta * phi2 * phi2 - omega * (q_point[l][0] * phi_re_value[l] * phi_im_gradient[l][1]                
 							      - q_point[l][1] * phi_re_value[l] * phi_im_gradient[l][0] 
 							      - q_point[l][0] * phi_im_value[l] * phi_re_gradient[l][1] 
-							      + q_point[l][1] * phi_im_value[l] * phi_im_gradient[l][0]));
+							      + q_point[l][1] * phi_im_value[l] * phi_re_gradient[l][0]));
 
 	}
     }
