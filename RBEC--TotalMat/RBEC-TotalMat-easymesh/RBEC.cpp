@@ -44,7 +44,7 @@ std::vector<double> Initial_Im::gradient(const double * p) const
 
 
 RBEC::RBEC(const std::string& file) :
-    mesh_file(file), beta(100.0), t(0.0), dt(1.0e-3), gamma_x(1.0), gamma_y(1.0), omega(0.5)
+    mesh_file(file), beta(100.0), t(0.0), dt(1.0e-3), gamma_x(1.0), gamma_y(1.0), omega(0.75), Linf_delta_phi(1.0)
 {};
 
 RBEC::~RBEC()
@@ -98,7 +98,7 @@ void RBEC::run()
     	phi2.writeOpenDXData("phi2.dx");
 
     	std::cout << "t  = " << t << std::endl;
-    } while (t < 30);
+    } while (Linf_delta_phi > 1e-7);
 };
 
 void RBEC::initialValue()
@@ -148,13 +148,16 @@ void RBEC::stepForward()
     int n_total_dof = 2 * n_dof;
 
     mat_RBEC.reinit(sp_RBEC);
-    mat_rere.reinit(sp_rere);
-    mat_reim.reinit(sp_reim);
-    mat_imre.reinit(sp_imre);
-    mat_imim.reinit(sp_imim);
+//    mat_rere.reinit(sp_rere);
+//    mat_reim.reinit(sp_reim);
+//    mat_imre.reinit(sp_imre);
+//    mat_imim.reinit(sp_imim);
 
     Vector<double> phi(n_total_dof);
     FEMFunction <double, DIM> phi_star(fem_space);
+    FEMFunction <double, DIM> _phi_re(phi_re);
+    FEMFunction <double, DIM> _phi_im(phi_im);
+    FEMFunction <double, DIM> delta_phi(fem_space);
     Vector<double> rhs(n_total_dof);
     Potential V(gamma_x, gamma_y);
 
@@ -211,7 +214,6 @@ void RBEC::stepForward()
 
     boundaryValue(phi, rhs, mat_RBEC);
 
-
 //    const std::size_t * rowstart = sp_RBEC.get_rowstart_indices();
 //    const unsigned int * colnum = sp_RBEC.get_column_numbers();
 
@@ -256,19 +258,6 @@ void RBEC::stepForward()
      SolverGMRES<Vector<double> > gmres(solver_control);
      gmres.solve(mat_RBEC, phi, rhs, preconditioner);
 //     gmres.solve(mat_RBEC, phi, rhs, PreconditionIdentity());
-
-//    std::ofstream output_phi("phi.m");
-//    output_phi.setf(std::ios::fixed);
-//    output_phi.precision(20);
-//    output_phi << "phi =[" << std::endl;
-//	for (int i = 0; i < n_total_dof; ++i)
-//	{
-//	    output_phi << phi(i) << std::endl;
-//	}
-//	output_phi << "];" << std::endl;
-//	output_phi.close();
-//	std::cout << "RBEC phi outputed!" << std::endl;
-//	getchar();
       
      for (int i = 0; i < n_dof; ++i)
      {
@@ -287,13 +276,22 @@ void RBEC::stepForward()
      {
     	phi_re(i) /= L2Phi;
 	phi_im(i) /= L2Phi;
+	delta_phi(i) = sqrt((_phi_re(i) - phi_re(i)) * (_phi_re(i) - phi_re(i)) +  (_phi_im(i) - phi_im(i)) *  (_phi_im(i) - phi_im(i)));
      }
+
+     Linf_delta_phi = delta_phi(0);
+
+     for (int i = 1; i < n_dof; ++i)
+     {
+	 if (delta_phi(i) > Linf_delta_phi)
+	     Linf_delta_phi = delta_phi(i);
+     }
+     std::cout << "Linf norm of delta_phi  = " << Linf_delta_phi << std::endl;
 
      double e = energy(phi_re, phi_im, 10);
      std::cout << "Energy = " << e << std::endl;
 
      t += dt;
-//     getchar();
 };
 
 double RBEC::energy(FEMFunction<double, DIM>& phi_re, FEMFunction<double, DIM>& phi_im, int algebric_accuracy)
